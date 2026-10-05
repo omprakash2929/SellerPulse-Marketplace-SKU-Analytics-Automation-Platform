@@ -1,7 +1,6 @@
 """SQLAlchemy 2.0 database models for SellerPulse."""
 
-from datetime import datetime
-from typing import Optional
+from datetime import UTC, datetime
 
 from sqlalchemy import (
     Boolean,
@@ -15,6 +14,11 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+
+def utc_now() -> datetime:
+    """Return current naive UTC datetime for SQLite storage."""
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 class Base(DeclarativeBase):
@@ -34,7 +38,7 @@ class Store(Base):
     platform: Mapped[str] = mapped_column(String(64), default="shopify", nullable=False)
     currency: Mapped[str] = mapped_column(String(3), default="USD", nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, nullable=False)
 
     # Relationships
     skus: Mapped[list["SKU"]] = relationship("SKU", back_populates="store", cascade="all, delete-orphan")
@@ -66,7 +70,7 @@ class SKU(Base):
     lead_time_days: Mapped[int] = mapped_column(Integer, default=7, nullable=False)
     status: Mapped[str] = mapped_column(String(32), default="ACTIVE", nullable=False)  # ACTIVE, DISCONTINUED, LIQUIDATING
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+        DateTime, default=utc_now, onupdate=utc_now, nullable=False
     )
 
     # Relationships
@@ -98,7 +102,7 @@ class Order(Base):
     total_amount: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     status: Mapped[str] = mapped_column(String(32), default="COMPLETED", nullable=False)  # COMPLETED, REFUNDED, CANCELLED
     channel: Mapped[str] = mapped_column(String(64), default="web", nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, nullable=False)
 
     # Relationships
     store: Mapped["Store"] = relationship("Store", back_populates="orders")
@@ -146,7 +150,7 @@ class PriceHistory(Base):
     old_price: Mapped[float] = mapped_column(Float, nullable=False)
     new_price: Mapped[float] = mapped_column(Float, nullable=False)
     reason: Mapped[str] = mapped_column(String(255), nullable=False)
-    changed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    changed_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, nullable=False)
 
     # Relationships
     sku: Mapped["SKU"] = relationship("SKU", back_populates="price_history")
@@ -171,11 +175,11 @@ class AlertLog(Base):
     message: Mapped[str] = mapped_column(Text, nullable=False)
     metrics_payload: Mapped[str | None] = mapped_column(Text, nullable=True)
     acknowledged: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    triggered_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    triggered_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, nullable=False, index=True)
 
     # Relationships
     store: Mapped["Store"] = relationship("Store", back_populates="alerts")
-    sku: Mapped[Optional["SKU"]] = relationship("SKU", back_populates="alerts")
+    sku: Mapped["SKU | None"] = relationship("SKU", back_populates="alerts")
 
     def __repr__(self) -> str:
         return f"<AlertLog id={self.id} type='{self.alert_type}' severity='{self.severity}'>"
