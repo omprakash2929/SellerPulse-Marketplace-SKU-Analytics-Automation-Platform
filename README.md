@@ -52,6 +52,11 @@ Every tool in SellerPulse was selected based on strict engineering criteria for 
 | **Containerization** | **Docker** & **Compose** | `Multi-stage`| Production-ready multi-stage container build isolating the API, Dashboard, and Scheduler worker into unprivileged, secure Linux runtime containers sharing persistent storage. |
 
 ---
+# Demo 
+![image1](./Demo/img1.jpeg)
+![image2](./Demo/img2.jpeg)
+![image3](./Demo/img3.jpeg)
+
 
 ## 🏗️ System Architecture & Data Flow
 
