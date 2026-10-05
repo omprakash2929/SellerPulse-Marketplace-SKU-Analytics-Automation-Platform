@@ -51,7 +51,9 @@ class AlertDispatcher:
         session.flush()
 
         # 2. Console notification
-        log_msg = f"[{alert.severity}] {alert.alert_type} for Store {alert.store_id}: {alert.message}"
+        log_msg = (
+            f"[{alert.severity}] {alert.alert_type} for Store {alert.store_id}: {alert.message}"
+        )
         if alert.severity == "CRITICAL":
             logger.error(log_msg)
         elif alert.severity == "WARNING":
@@ -137,7 +139,11 @@ class AlertManager:
         created_alerts: list[AlertLog] = []
 
         for item in critical_items:
-            severity = "CRITICAL" if item.days_of_stock_left <= 7.0 or item.risk_level == "CRITICAL" else "WARNING"
+            severity = (
+                "CRITICAL"
+                if item.days_of_stock_left <= 7.0 or item.risk_level == "CRITICAL"
+                else "WARNING"
+            )
             msg = (
                 f"Low Stock Alert: SKU {item.sku_code} ('{item.title}') has {item.current_stock} units left "
                 f"(~{item.days_of_stock_left:.1f} days supply at {item.effective_velocity:.1f} units/day). "

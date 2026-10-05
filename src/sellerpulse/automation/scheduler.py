@@ -35,7 +35,9 @@ def job_run_etl() -> None:
     """Scheduled task: execute marketplace ETL sync."""
     logger.info("Scheduler: Running scheduled ETL pipeline...")
     try:
-        connector = SyntheticConnector(seed=int(time.time()), days=30, total_skus=100, target_orders=1000)
+        connector = SyntheticConnector(
+            seed=int(time.time()), days=30, total_skus=100, target_orders=1000
+        )
         summary = run_etl_pipeline(connector)
         logger.info(
             "Scheduler: ETL completed in %.2fs (Orders synced: %d)",

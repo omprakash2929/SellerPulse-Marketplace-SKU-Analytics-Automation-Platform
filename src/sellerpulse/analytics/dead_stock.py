@@ -63,7 +63,9 @@ class DeadStockService:
                 SKU.retail_price,
                 SKU.current_stock,
                 SKU.reorder_point,
-                SKU.created_at if hasattr(SKU, "created_at") else SKU.updated_at.label("created_at"),
+                SKU.created_at
+                if hasattr(SKU, "created_at")
+                else SKU.updated_at.label("created_at"),
             )
             .join(Store, SKU.store_id == Store.id)
             .where(SKU.current_stock > 0)
@@ -88,7 +90,10 @@ class DeadStockService:
                 func.sum(OrderItem.quantity).label("units_sold_365d"),
                 func.sum(
                     case(
-                        (Order.order_date >= as_of_naive - timedelta(days=slow_thresh), OrderItem.quantity),
+                        (
+                            Order.order_date >= as_of_naive - timedelta(days=slow_thresh),
+                            OrderItem.quantity,
+                        ),
                         else_=0,
                     )
                 ).label("units_sold_slow_window"),

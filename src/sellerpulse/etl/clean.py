@@ -64,7 +64,9 @@ class DataCleaner:
                 continue
 
             if sku.retail_price < sku.cost_price:
-                anomalies.append(f"Negative margin on SKU {code}: retail={sku.retail_price} < cost={sku.cost_price}")
+                anomalies.append(
+                    f"Negative margin on SKU {code}: retail={sku.retail_price} < cost={sku.cost_price}"
+                )
 
             stock = max(0, sku.current_stock)
             reorder = max(0, sku.reorder_point)

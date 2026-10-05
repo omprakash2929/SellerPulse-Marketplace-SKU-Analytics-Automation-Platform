@@ -250,7 +250,9 @@ class SyntheticMarketplaceGenerator:
                     continue
 
                 chosen_skus = self.rng.choices(candidate_skus, weights=weights, k=num_items)
-                chosen_skus = list({s.sku_code: s for s in chosen_skus}.values())  # deduplicate items in same order
+                chosen_skus = list(
+                    {s.sku_code: s for s in chosen_skus}.values()
+                )  # deduplicate items in same order
 
                 order_hour = self.rng.randint(6, 23)
                 order_minute = self.rng.randint(0, 59)
@@ -341,9 +343,7 @@ class SyntheticConnector(BaseMarketplaceConnector):
     def fetch_catalog(self, store_key: str) -> list[RawSKU]:
         return self.generator._catalog_by_store.get(store_key, [])
 
-    def fetch_orders(
-        self, store_key: str, since: datetime | None = None
-    ) -> list[RawOrder]:
+    def fetch_orders(self, store_key: str, since: datetime | None = None) -> list[RawOrder]:
         orders = self.generator._orders_by_store.get(store_key, [])
         if since is None:
             return orders

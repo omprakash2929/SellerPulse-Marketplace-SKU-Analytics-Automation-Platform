@@ -117,7 +117,9 @@ class SKUMetricsService:
 
         # 3. Aggregate sales by SKU
         items_df["cogs_line"] = items_df["quantity"] * items_df["unit_cost"]
-        items_df["net_revenue_line"] = items_df["total_price"] * (~items_df["is_returned"]).astype(int)
+        items_df["net_revenue_line"] = items_df["total_price"] * (~items_df["is_returned"]).astype(
+            int
+        )
         items_df["returned_qty"] = items_df["quantity"] * items_df["is_returned"].astype(int)
 
         agg_df = (
@@ -142,18 +144,26 @@ class SKUMetricsService:
         # Compute calculated metrics
         merged["gross_profit"] = (merged["net_revenue"] - merged["cogs"]).round(2)
         merged["margin_pct"] = (
-            (merged["gross_profit"] / merged["net_revenue"]) * 100.0
-        ).where(merged["net_revenue"] > 0, 0.0).round(2)
+            ((merged["gross_profit"] / merged["net_revenue"]) * 100.0)
+            .where(merged["net_revenue"] > 0, 0.0)
+            .round(2)
+        )
         merged["return_rate_pct"] = (
-            (merged["units_returned"] / merged["units_sold"]) * 100.0
-        ).where(merged["units_sold"] > 0, 0.0).round(2)
+            ((merged["units_returned"] / merged["units_sold"]) * 100.0)
+            .where(merged["units_sold"] > 0, 0.0)
+            .round(2)
+        )
         merged["asp"] = (
-            merged["gross_revenue"] / merged["units_sold"]
-        ).where(merged["units_sold"] > 0, 0.0).round(2)
+            (merged["gross_revenue"] / merged["units_sold"])
+            .where(merged["units_sold"] > 0, 0.0)
+            .round(2)
+        )
         merged["stock_value"] = (merged["current_stock"] * merged["cost_price"]).round(2)
         merged["sell_through_pct"] = (
-            (merged["units_sold"] / (merged["units_sold"] + merged["current_stock"])) * 100.0
-        ).where(merged["units_sold"] + merged["current_stock"] > 0, 0.0).round(2)
+            ((merged["units_sold"] / (merged["units_sold"] + merged["current_stock"])) * 100.0)
+            .where(merged["units_sold"] + merged["current_stock"] > 0, 0.0)
+            .round(2)
+        )
 
         return merged
 

@@ -11,6 +11,7 @@ from sellerpulse.db.session import get_db
 @pytest.fixture
 def client(populated_session):
     """Provide TestClient with database session overridden to test database."""
+
     def _override_get_db():
         yield populated_session
 
@@ -88,7 +89,9 @@ def test_analytics_endpoints(client, auth_headers):
     assert "summary" in dead_data
 
     # Stockout Risk
-    resp_stockout = client.get("/api/v1/analytics/stockout-risk?days_threshold=30", headers=auth_headers)
+    resp_stockout = client.get(
+        "/api/v1/analytics/stockout-risk?days_threshold=30", headers=auth_headers
+    )
     assert resp_stockout.status_code == 200
     assert isinstance(resp_stockout.json(), list)
 
@@ -118,11 +121,15 @@ def test_automation_endpoints(client, auth_headers):
             "rule_applied": target["rule_applied"],
             "rationale": "Test API apply",
         }
-        resp_apply = client.post("/api/v1/automation/repricing/apply", json=apply_payload, headers=auth_headers)
+        resp_apply = client.post(
+            "/api/v1/automation/repricing/apply", json=apply_payload, headers=auth_headers
+        )
         assert resp_apply.status_code == 200
         assert resp_apply.json()["status"] == "SUCCESS"
 
     # Generate reports
-    resp_report = client.post("/api/v1/automation/reports/generate?report_format=both", headers=auth_headers)
+    resp_report = client.post(
+        "/api/v1/automation/reports/generate?report_format=both", headers=auth_headers
+    )
     assert resp_report.status_code == 200
     assert resp_report.json()["status"] == "SUCCESS"

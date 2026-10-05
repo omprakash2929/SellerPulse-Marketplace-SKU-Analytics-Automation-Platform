@@ -37,7 +37,9 @@ def load_stores_list() -> list[tuple[int, str, str]]:
         return session.execute(stmt).all()
 
 
-def load_timeseries_data(store_id: int | None, start_dt: datetime, end_dt: datetime) -> pd.DataFrame:
+def load_timeseries_data(
+    store_id: int | None, start_dt: datetime, end_dt: datetime
+) -> pd.DataFrame:
     """Fetch daily aggregated order metrics for trend visualizations."""
     with get_db_context() as session:
         stmt = (
@@ -248,7 +250,13 @@ def main():
                         template="plotly_dark",
                         height=380,
                         margin={"l": 20, "r": 20, "t": 40, "b": 20},
-                        legend={"orientation": "h", "yanchor": "bottom", "y": 1.02, "xanchor": "right", "x": 1},
+                        legend={
+                            "orientation": "h",
+                            "yanchor": "bottom",
+                            "y": 1.02,
+                            "xanchor": "right",
+                            "x": 1,
+                        },
                     )
                     st.plotly_chart(fig_trend, use_container_width=True)
 
@@ -256,9 +264,7 @@ def main():
                     sku_df = metrics_svc.get_sku_metrics_df(
                         store_id=selected_store_id, start_date=start_date, end_date=anchor_end
                     )
-                    cat_summary = (
-                        sku_df.groupby("category")["gross_revenue"].sum().reset_index()
-                    )
+                    cat_summary = sku_df.groupby("category")["gross_revenue"].sum().reset_index()
                     fig_cat = px.pie(
                         cat_summary,
                         values="gross_revenue",
@@ -335,7 +341,13 @@ def main():
                         "side": "right",
                         "range": [0, 105],
                     },
-                    legend={"orientation": "h", "yanchor": "bottom", "y": 1.02, "xanchor": "right", "x": 1},
+                    legend={
+                        "orientation": "h",
+                        "yanchor": "bottom",
+                        "y": 1.02,
+                        "xanchor": "right",
+                        "x": 1,
+                    },
                 )
                 st.plotly_chart(fig_abc, use_container_width=True)
 

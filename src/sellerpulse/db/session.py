@@ -41,6 +41,7 @@ def get_engine(db_url: str | None = None, **engine_kwargs: Any) -> Engine:
 
     # Enable SQLite WAL mode and foreign key constraints on connection
     if url.startswith("sqlite") and ":memory:" not in url:
+
         @event.listens_for(engine, "connect")
         def set_sqlite_pragma(dbapi_connection: Any, _connection_record: Any) -> None:
             cursor = dbapi_connection.cursor()

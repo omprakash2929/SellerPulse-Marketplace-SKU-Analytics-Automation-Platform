@@ -54,7 +54,9 @@ class ABCAnalysisService:
             return pd.DataFrame()
 
         # Sort descending by gross revenue, tie-break by units sold
-        df = df.sort_values(by=["gross_revenue", "units_sold"], ascending=[False, False]).reset_index(drop=True)
+        df = df.sort_values(
+            by=["gross_revenue", "units_sold"], ascending=[False, False]
+        ).reset_index(drop=True)
         total_revenue = float(df["gross_revenue"].sum())
 
         if total_revenue <= 0.0:

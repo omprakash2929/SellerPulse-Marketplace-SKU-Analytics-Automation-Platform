@@ -61,9 +61,7 @@ class ETLLoader:
         self.session.flush()
         return store_map
 
-    def load_catalog(
-        self, store: Store, clean_skus: list
-    ) -> tuple[dict[str, SKU], int]:
+    def load_catalog(self, store: Store, clean_skus: list) -> tuple[dict[str, SKU], int]:
         """Upsert SKUs, update inventory, and log PriceHistory if retail price changed."""
         sku_map: dict[str, SKU] = {}
         price_changes = 0
@@ -211,9 +209,7 @@ def run_etl_pipeline(
             valid_codes = set(sku_entities.keys())
             raw_orders = connector.fetch_orders(s_key)
             clean_orders, _, _ = cleaner.clean_orders(raw_orders, valid_codes)
-            orders_count, items_count = loader.load_orders(
-                store_entity, clean_orders, sku_entities
-            )
+            orders_count, items_count = loader.load_orders(store_entity, clean_orders, sku_entities)
             summary.orders_synced += orders_count
             summary.order_items_synced += items_count
 

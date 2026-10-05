@@ -134,7 +134,9 @@ def list_stores(
     ]
 
 
-@app.get("/api/v1/stores/{store_id}/summary", tags=["Stores"], summary="Store Executive KPI Scorecard")
+@app.get(
+    "/api/v1/stores/{store_id}/summary", tags=["Stores"], summary="Store Executive KPI Scorecard"
+)
 def get_store_kpi_summary(
     store_id: int,
     days: int = Query(default=365, ge=1, le=730),
@@ -149,9 +151,13 @@ def get_store_kpi_summary(
     dead_svc = DeadStockService(session)
     forecast_svc = StockoutForecastService(session)
 
-    summary = metrics_svc.get_store_summary(store_id=store_id, start_date=start_dt, end_date=anchor_end)
+    summary = metrics_svc.get_store_summary(
+        store_id=store_id, start_date=start_dt, end_date=anchor_end
+    )
     dead_summary = dead_svc.get_summary(store_id=store_id, as_of_date=anchor_end)
-    critical_stockouts = forecast_svc.get_critical_stockouts(store_id=store_id, as_of_date=anchor_end)
+    critical_stockouts = forecast_svc.get_critical_stockouts(
+        store_id=store_id, as_of_date=anchor_end
+    )
 
     return {
         "store_id": store_id,
@@ -239,7 +245,9 @@ def get_dead_stock(
     }
 
 
-@app.get("/api/v1/analytics/stockout-risk", tags=["Analytics"], summary="Stockout Depletion Forecast")
+@app.get(
+    "/api/v1/analytics/stockout-risk", tags=["Analytics"], summary="Stockout Depletion Forecast"
+)
 def get_stockout_risk(
     store_id: int | None = Query(default=None),
     days_threshold: float = Query(default=14.0, ge=1.0, le=90.0),
@@ -364,7 +372,9 @@ class ApplyRepricingRequest(BaseModel):
     rationale: str = "Approved via API"
 
 
-@app.post("/api/v1/automation/repricing/apply", tags=["Automation"], summary="Apply Repricing Action")
+@app.post(
+    "/api/v1/automation/repricing/apply", tags=["Automation"], summary="Apply Repricing Action"
+)
 def apply_repricing_action(
     req: ApplyRepricingRequest,
     session: Session = Depends(get_db),
@@ -398,7 +408,9 @@ def apply_repricing_action(
     return {"status": "SUCCESS", "sku_id": req.sku_id, "new_price": req.suggested_price}
 
 
-@app.post("/api/v1/automation/reports/generate", tags=["Automation"], summary="Trigger Report Generation")
+@app.post(
+    "/api/v1/automation/reports/generate", tags=["Automation"], summary="Trigger Report Generation"
+)
 def trigger_report_generation(
     store_id: int | None = Query(default=None),
     report_format: str = Query(default="both", regex="^(excel|pdf|both)$"),

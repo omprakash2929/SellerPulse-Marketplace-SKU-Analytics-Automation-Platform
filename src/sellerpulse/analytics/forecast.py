@@ -91,7 +91,9 @@ class StockoutForecastService:
                 func.sum(
                     case(
                         (
-                            (Order.order_date >= d7_start) & (Order.order_date <= as_of_naive) & (~OrderItem.is_returned),
+                            (Order.order_date >= d7_start)
+                            & (Order.order_date <= as_of_naive)
+                            & (~OrderItem.is_returned),
                             OrderItem.quantity,
                         ),
                         else_=0,
@@ -100,7 +102,9 @@ class StockoutForecastService:
                 func.sum(
                     case(
                         (
-                            (Order.order_date >= d30_start) & (Order.order_date <= as_of_naive) & (~OrderItem.is_returned),
+                            (Order.order_date >= d30_start)
+                            & (Order.order_date <= as_of_naive)
+                            & (~OrderItem.is_returned),
                             OrderItem.quantity,
                         ),
                         else_=0,
@@ -181,9 +185,19 @@ class StockoutForecastService:
         merged["suggested_reorder_qty"] = reorder_qty_list
 
         # Sort: CRITICAL, then WARNING, ascending by days_of_stock_left
-        risk_priority = {"CRITICAL": 0, "OUT_OF_STOCK": 1, "WARNING": 2, "HEALTHY": 3, "OVERSTOCKED": 4}
+        risk_priority = {
+            "CRITICAL": 0,
+            "OUT_OF_STOCK": 1,
+            "WARNING": 2,
+            "HEALTHY": 3,
+            "OVERSTOCKED": 4,
+        }
         merged["risk_rank"] = merged["risk_level"].map(risk_priority)
-        merged = merged.sort_values(by=["risk_rank", "days_of_stock_left"]).drop(columns=["risk_rank"]).reset_index(drop=True)
+        merged = (
+            merged.sort_values(by=["risk_rank", "days_of_stock_left"])
+            .drop(columns=["risk_rank"])
+            .reset_index(drop=True)
+        )
 
         return merged
 

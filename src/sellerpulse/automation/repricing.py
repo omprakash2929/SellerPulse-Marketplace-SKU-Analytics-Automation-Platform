@@ -52,11 +52,15 @@ class RepricingEngine:
         min_margin_pct: float | None = None,
     ) -> list[RepricingRecommendation]:
         """Evaluate catalog items and generate rule-based repricing recommendations."""
-        margin_floor = min_margin_pct if min_margin_pct is not None else self.settings.MARGIN_FLOOR_PCT
+        margin_floor = (
+            min_margin_pct if min_margin_pct is not None else self.settings.MARGIN_FLOOR_PCT
+        )
 
         # Fetch forecasts and dead stock evaluations
         forecast_df = self.forecast_svc.get_forecast_df(store_id=store_id, as_of_date=as_of_date)
-        dead_df = self.dead_svc.detect_non_performing_stock_df(store_id=store_id, as_of_date=as_of_date)
+        dead_df = self.dead_svc.detect_non_performing_stock_df(
+            store_id=store_id, as_of_date=as_of_date
+        )
 
         dead_sku_map = (
             {row["sku_code"]: row for _, row in dead_df.iterrows()} if not dead_df.empty else {}
@@ -206,9 +210,7 @@ class RepricingEngine:
         )
         return True
 
-    def recommendations_to_df(
-        self, recommendations: list[RepricingRecommendation]
-    ) -> pd.DataFrame:
+    def recommendations_to_df(self, recommendations: list[RepricingRecommendation]) -> pd.DataFrame:
         """Convert list of recommendations into a pandas DataFrame."""
         if not recommendations:
             return pd.DataFrame()

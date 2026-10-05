@@ -124,9 +124,7 @@ class ShopifyStubConnector(BaseMarketplaceConnector):
             )
         ]
 
-    def fetch_orders(
-        self, store_key: str, since: datetime | None = None
-    ) -> list[RawOrder]:
+    def fetch_orders(self, store_key: str, since: datetime | None = None) -> list[RawOrder]:
         """Fetch historical or incremental orders.
 
         TODO: Execute GraphQL query filtering by `created_at` or `updated_at`:

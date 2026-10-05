@@ -72,7 +72,10 @@ def run_alerts(
     with get_db_context() as session:
         mgr = AlertManager(session)
         alerts = mgr.run_all_checks(store_id=store_id)
-        typer.secho(f"[OK] Alert evaluation finished. {len(alerts)} alerts generated and logged.", fg=typer.colors.YELLOW)
+        typer.secho(
+            f"[OK] Alert evaluation finished. {len(alerts)} alerts generated and logged.",
+            fg=typer.colors.YELLOW,
+        )
         for a in alerts[:5]:
             typer.echo(f"  [{a.severity}] {a.alert_type}: {a.message}")
 
@@ -86,7 +89,9 @@ def generate_report_cmd(
     """Generate executive Excel and PDF reports."""
     typer.echo(f"[*] Generating {report_format} reports...")
     with get_db_context() as session:
-        files = generate_reports(session, store_id=store_id, report_format=report_format, output_dir=output_dir)
+        files = generate_reports(
+            session, store_id=store_id, report_format=report_format, output_dir=output_dir
+        )
         for fmt, path in files.items():
             typer.secho(f"[OK] Generated {fmt.upper()} report: {path}", fg=typer.colors.GREEN)
 

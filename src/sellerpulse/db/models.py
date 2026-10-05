@@ -41,9 +41,15 @@ class Store(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, nullable=False)
 
     # Relationships
-    skus: Mapped[list["SKU"]] = relationship("SKU", back_populates="store", cascade="all, delete-orphan")
-    orders: Mapped[list["Order"]] = relationship("Order", back_populates="store", cascade="all, delete-orphan")
-    alerts: Mapped[list["AlertLog"]] = relationship("AlertLog", back_populates="store", cascade="all, delete-orphan")
+    skus: Mapped[list["SKU"]] = relationship(
+        "SKU", back_populates="store", cascade="all, delete-orphan"
+    )
+    orders: Mapped[list["Order"]] = relationship(
+        "Order", back_populates="store", cascade="all, delete-orphan"
+    )
+    alerts: Mapped[list["AlertLog"]] = relationship(
+        "AlertLog", back_populates="store", cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         return f"<Store id={self.id} key='{self.store_key}' name='{self.name}'>"
@@ -59,7 +65,9 @@ class SKU(Base):
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    store_id: Mapped[int] = mapped_column(ForeignKey("stores.id", ondelete="CASCADE"), nullable=False, index=True)
+    store_id: Mapped[int] = mapped_column(
+        ForeignKey("stores.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     sku_code: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     category: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
@@ -68,7 +76,9 @@ class SKU(Base):
     current_stock: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     reorder_point: Mapped[int] = mapped_column(Integer, default=15, nullable=False)
     lead_time_days: Mapped[int] = mapped_column(Integer, default=7, nullable=False)
-    status: Mapped[str] = mapped_column(String(32), default="ACTIVE", nullable=False)  # ACTIVE, DISCONTINUED, LIQUIDATING
+    status: Mapped[str] = mapped_column(
+        String(32), default="ACTIVE", nullable=False
+    )  # ACTIVE, DISCONTINUED, LIQUIDATING
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=utc_now, onupdate=utc_now, nullable=False
     )
@@ -95,12 +105,16 @@ class Order(Base):
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    store_id: Mapped[int] = mapped_column(ForeignKey("stores.id", ondelete="CASCADE"), nullable=False, index=True)
+    store_id: Mapped[int] = mapped_column(
+        ForeignKey("stores.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     order_number: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
     order_date: Mapped[datetime] = mapped_column(DateTime, nullable=False, index=True)
     customer_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     total_amount: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
-    status: Mapped[str] = mapped_column(String(32), default="COMPLETED", nullable=False)  # COMPLETED, REFUNDED, CANCELLED
+    status: Mapped[str] = mapped_column(
+        String(32), default="COMPLETED", nullable=False
+    )  # COMPLETED, REFUNDED, CANCELLED
     channel: Mapped[str] = mapped_column(String(64), default="web", nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, nullable=False)
 
@@ -118,13 +132,15 @@ class OrderItem(Base):
     """Individual line item associated with an order."""
 
     __tablename__ = "order_items"
-    __table_args__ = (
-        Index("ix_order_items_sku_order", "sku_id", "order_id"),
-    )
+    __table_args__ = (Index("ix_order_items_sku_order", "sku_id", "order_id"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    order_id: Mapped[int] = mapped_column(ForeignKey("orders.id", ondelete="CASCADE"), nullable=False, index=True)
-    sku_id: Mapped[int] = mapped_column(ForeignKey("skus.id", ondelete="CASCADE"), nullable=False, index=True)
+    order_id: Mapped[int] = mapped_column(
+        ForeignKey("orders.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    sku_id: Mapped[int] = mapped_column(
+        ForeignKey("skus.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     quantity: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     unit_price: Mapped[float] = mapped_column(Float, nullable=False)
     unit_cost: Mapped[float] = mapped_column(Float, nullable=False)
@@ -146,7 +162,9 @@ class PriceHistory(Base):
     __tablename__ = "price_history"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    sku_id: Mapped[int] = mapped_column(ForeignKey("skus.id", ondelete="CASCADE"), nullable=False, index=True)
+    sku_id: Mapped[int] = mapped_column(
+        ForeignKey("skus.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     old_price: Mapped[float] = mapped_column(Float, nullable=False)
     new_price: Mapped[float] = mapped_column(Float, nullable=False)
     reason: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -163,19 +181,27 @@ class AlertLog(Base):
     """Operational records of automated alerts triggered by background monitors."""
 
     __tablename__ = "alert_logs"
-    __table_args__ = (
-        Index("ix_alerts_store_triggered", "store_id", "triggered_at"),
-    )
+    __table_args__ = (Index("ix_alerts_store_triggered", "store_id", "triggered_at"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    store_id: Mapped[int] = mapped_column(ForeignKey("stores.id", ondelete="CASCADE"), nullable=False, index=True)
-    sku_id: Mapped[int | None] = mapped_column(ForeignKey("skus.id", ondelete="SET NULL"), nullable=True, index=True)
-    alert_type: Mapped[str] = mapped_column(String(64), nullable=False)  # LOW_STOCK, SALES_DROP, DEAD_STOCK
-    severity: Mapped[str] = mapped_column(String(32), default="WARNING", nullable=False)  # INFO, WARNING, CRITICAL
+    store_id: Mapped[int] = mapped_column(
+        ForeignKey("stores.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    sku_id: Mapped[int | None] = mapped_column(
+        ForeignKey("skus.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    alert_type: Mapped[str] = mapped_column(
+        String(64), nullable=False
+    )  # LOW_STOCK, SALES_DROP, DEAD_STOCK
+    severity: Mapped[str] = mapped_column(
+        String(32), default="WARNING", nullable=False
+    )  # INFO, WARNING, CRITICAL
     message: Mapped[str] = mapped_column(Text, nullable=False)
     metrics_payload: Mapped[str | None] = mapped_column(Text, nullable=True)
     acknowledged: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    triggered_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, nullable=False, index=True)
+    triggered_at: Mapped[datetime] = mapped_column(
+        DateTime, default=utc_now, nullable=False, index=True
+    )
 
     # Relationships
     store: Mapped["Store"] = relationship("Store", back_populates="alerts")

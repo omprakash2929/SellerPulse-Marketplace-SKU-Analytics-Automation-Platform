@@ -72,9 +72,7 @@ class BaseMarketplaceConnector(ABC):
         pass
 
     @abstractmethod
-    def fetch_orders(
-        self, store_key: str, since: datetime | None = None
-    ) -> list[RawOrder]:
+    def fetch_orders(self, store_key: str, since: datetime | None = None) -> list[RawOrder]:
         """Fetch historical or incremental orders for a store."""
         pass
 

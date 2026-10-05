@@ -28,10 +28,41 @@ def test_data_cleaner_store_deduplication():
 def test_data_cleaner_sku_validation():
     cleaner = DataCleaner()
     raw = [
-        RawSKU(sku_code="SKU-OK", title="Valid SKU", category="Apparel", cost_price=10.0, retail_price=25.0, current_stock=50),
-        RawSKU.model_construct(sku_code="SKU-NEG-PRICE", title="Negative Price", category="Apparel", cost_price=-5.0, retail_price=20.0, current_stock=10, reorder_point=15, lead_time_days=7, status="ACTIVE"),
-        RawSKU(sku_code="SKU-DUP", title="First Dup", category="Apparel", cost_price=10.0, retail_price=20.0, current_stock=10),
-        RawSKU(sku_code="sku-dup", title="Second Dup", category="Apparel", cost_price=10.0, retail_price=20.0, current_stock=10),
+        RawSKU(
+            sku_code="SKU-OK",
+            title="Valid SKU",
+            category="Apparel",
+            cost_price=10.0,
+            retail_price=25.0,
+            current_stock=50,
+        ),
+        RawSKU.model_construct(
+            sku_code="SKU-NEG-PRICE",
+            title="Negative Price",
+            category="Apparel",
+            cost_price=-5.0,
+            retail_price=20.0,
+            current_stock=10,
+            reorder_point=15,
+            lead_time_days=7,
+            status="ACTIVE",
+        ),
+        RawSKU(
+            sku_code="SKU-DUP",
+            title="First Dup",
+            category="Apparel",
+            cost_price=10.0,
+            retail_price=20.0,
+            current_stock=10,
+        ),
+        RawSKU(
+            sku_code="sku-dup",
+            title="Second Dup",
+            category="Apparel",
+            cost_price=10.0,
+            retail_price=20.0,
+            current_stock=10,
+        ),
     ]
     cleaned, dropped, anomalies = cleaner.clean_catalog(raw)
     assert len(cleaned) == 2  # SKU-OK and SKU-DUP
@@ -52,7 +83,9 @@ def test_data_cleaner_order_validation():
             customer_email="user@test.com",
             total_amount=50.0,
             items=[
-                RawOrderItem(sku_code="SKU-1", quantity=2, unit_price=25.0, unit_cost=10.0, total_price=50.0),
+                RawOrderItem(
+                    sku_code="SKU-1", quantity=2, unit_price=25.0, unit_cost=10.0, total_price=50.0
+                ),
             ],
         ),
         RawOrder(
@@ -60,7 +93,9 @@ def test_data_cleaner_order_validation():
             order_date=future_date,
             total_amount=50.0,
             items=[
-                RawOrderItem(sku_code="SKU-1", quantity=1, unit_price=50.0, unit_cost=20.0, total_price=50.0),
+                RawOrderItem(
+                    sku_code="SKU-1", quantity=1, unit_price=50.0, unit_cost=20.0, total_price=50.0
+                ),
             ],
         ),
         RawOrder(
@@ -68,7 +103,13 @@ def test_data_cleaner_order_validation():
             order_date=now - timedelta(days=1),
             total_amount=30.0,
             items=[
-                RawOrderItem(sku_code="UNKNOWN-CODE", quantity=1, unit_price=30.0, unit_cost=10.0, total_price=30.0),
+                RawOrderItem(
+                    sku_code="UNKNOWN-CODE",
+                    quantity=1,
+                    unit_price=30.0,
+                    unit_cost=10.0,
+                    total_price=30.0,
+                ),
             ],
         ),
     ]
@@ -82,15 +123,24 @@ def test_etl_loader_idempotency_and_price_history(db_session):
     loader = ETLLoader(db_session)
 
     # 1. Load store
-    stores = loader.load_stores([
-        RawStore(store_key="store_test", name="Test Store", platform="shopify", currency="USD")
-    ])
+    stores = loader.load_stores(
+        [RawStore(store_key="store_test", name="Test Store", platform="shopify", currency="USD")]
+    )
     test_store = stores["store_test"]
 
     # 2. Load catalog
     skus, price_changes = loader.load_catalog(
         test_store,
-        [RawSKU(sku_code="SKU-TEST-01", title="Test SKU", category="Gear", cost_price=20.0, retail_price=50.0, current_stock=100)],
+        [
+            RawSKU(
+                sku_code="SKU-TEST-01",
+                title="Test SKU",
+                category="Gear",
+                cost_price=20.0,
+                retail_price=50.0,
+                current_stock=100,
+            )
+        ],
     )
     assert len(skus) == 1
     assert price_changes == 0
@@ -98,7 +148,16 @@ def test_etl_loader_idempotency_and_price_history(db_session):
     # 3. Reload catalog with modified price
     skus_v2, price_changes_v2 = loader.load_catalog(
         test_store,
-        [RawSKU(sku_code="SKU-TEST-01", title="Test SKU", category="Gear", cost_price=20.0, retail_price=59.99, current_stock=95)],
+        [
+            RawSKU(
+                sku_code="SKU-TEST-01",
+                title="Test SKU",
+                category="Gear",
+                cost_price=20.0,
+                retail_price=59.99,
+                current_stock=95,
+            )
+        ],
     )
     assert price_changes_v2 == 1
     db_session.flush()

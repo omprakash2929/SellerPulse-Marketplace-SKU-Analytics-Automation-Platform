@@ -105,9 +105,21 @@ class ExcelReportGenerator:
             ("Net Revenue", f"${summary['total_net_revenue']:,.2f}", "Excluding returns"),
             ("Gross Profit", f"${summary['total_gross_profit']:,.2f}", "Net revenue minus COGS"),
             ("Gross Margin %", f"{summary['overall_margin_pct']:.1f}%", "Overall profitability"),
-            ("Return Rate %", f"{summary['overall_return_rate_pct']:.1f}%", "Units returned / sold"),
-            ("Total Inventory Valuation", f"${summary['total_inventory_value']:,.2f}", "Cost value on hand"),
-            ("Dead Capital Tied Up", f"${dead_summary.dead_capital_tied_up:,.2f}", f"{dead_summary.total_dead_skus} SKUs with 0 sales >90d"),
+            (
+                "Return Rate %",
+                f"{summary['overall_return_rate_pct']:.1f}%",
+                "Units returned / sold",
+            ),
+            (
+                "Total Inventory Valuation",
+                f"${summary['total_inventory_value']:,.2f}",
+                "Cost value on hand",
+            ),
+            (
+                "Dead Capital Tied Up",
+                f"${dead_summary.dead_capital_tied_up:,.2f}",
+                f"{dead_summary.total_dead_skus} SKUs with 0 sales >90d",
+            ),
         ]
         for row in kpis:
             ws.append(list(row))
@@ -120,21 +132,32 @@ class ExcelReportGenerator:
         abc_svc = ABCAnalysisService(session)
         df = abc_svc.calculate_abc_df(store_id=store_id)
 
-        headers = ["SKU Code", "Title", "Category", "ABC Class", "Gross Revenue", "Revenue Share %", "Cumulative %", "Strategy Recommendation"]
+        headers = [
+            "SKU Code",
+            "Title",
+            "Category",
+            "ABC Class",
+            "Gross Revenue",
+            "Revenue Share %",
+            "Cumulative %",
+            "Strategy Recommendation",
+        ]
         self._style_headers(ws, headers)
 
         if not df.empty:
             for _, r in df.iterrows():
-                ws.append([
-                    r["sku_code"],
-                    r["title"],
-                    r["category"],
-                    r["abc_class"],
-                    r["gross_revenue"],
-                    r["revenue_share_pct"],
-                    r["cumulative_revenue_pct"],
-                    r["recommendation"],
-                ])
+                ws.append(
+                    [
+                        r["sku_code"],
+                        r["title"],
+                        r["category"],
+                        r["abc_class"],
+                        r["gross_revenue"],
+                        r["revenue_share_pct"],
+                        r["cumulative_revenue_pct"],
+                        r["recommendation"],
+                    ]
+                )
         self._auto_fit_columns(ws)
 
     def _build_stockout_sheet(self, wb: Workbook, session: Session, store_id: int | None) -> None:
@@ -144,21 +167,32 @@ class ExcelReportGenerator:
         forecast_svc = StockoutForecastService(session)
         df = forecast_svc.get_forecast_df(store_id=store_id)
 
-        headers = ["SKU Code", "Title", "Category", "On Hand", "Run Rate (units/d)", "Days Stock Left", "Risk Level", "Suggested Reorder"]
+        headers = [
+            "SKU Code",
+            "Title",
+            "Category",
+            "On Hand",
+            "Run Rate (units/d)",
+            "Days Stock Left",
+            "Risk Level",
+            "Suggested Reorder",
+        ]
         self._style_headers(ws, headers)
 
         if not df.empty:
             for _, r in df.iterrows():
-                ws.append([
-                    r["sku_code"],
-                    r["title"],
-                    r["category"],
-                    r["current_stock"],
-                    r["effective_velocity"],
-                    r["days_of_stock_left"],
-                    r["risk_level"],
-                    r["suggested_reorder_qty"],
-                ])
+                ws.append(
+                    [
+                        r["sku_code"],
+                        r["title"],
+                        r["category"],
+                        r["current_stock"],
+                        r["effective_velocity"],
+                        r["days_of_stock_left"],
+                        r["risk_level"],
+                        r["suggested_reorder_qty"],
+                    ]
+                )
         self._auto_fit_columns(ws)
 
     def _build_dead_stock_sheet(self, wb: Workbook, session: Session, store_id: int | None) -> None:
@@ -168,22 +202,34 @@ class ExcelReportGenerator:
         dead_svc = DeadStockService(session)
         df = dead_svc.detect_non_performing_stock_df(store_id=store_id)
 
-        headers = ["SKU Code", "Title", "Category", "Stock", "Unit Cost", "Capital Tied ($)", "Days Since Sale", "Classification", "Action"]
+        headers = [
+            "SKU Code",
+            "Title",
+            "Category",
+            "Stock",
+            "Unit Cost",
+            "Capital Tied ($)",
+            "Days Since Sale",
+            "Classification",
+            "Action",
+        ]
         self._style_headers(ws, headers)
 
         if not df.empty:
             for _, r in df.iterrows():
-                ws.append([
-                    r["sku_code"],
-                    r["title"],
-                    r["category"],
-                    r["current_stock"],
-                    r["cost_price"],
-                    r["capital_tied_up"],
-                    r["days_since_last_sale"],
-                    r["classification"],
-                    r["recommendation"],
-                ])
+                ws.append(
+                    [
+                        r["sku_code"],
+                        r["title"],
+                        r["category"],
+                        r["current_stock"],
+                        r["cost_price"],
+                        r["capital_tied_up"],
+                        r["days_since_last_sale"],
+                        r["classification"],
+                        r["recommendation"],
+                    ]
+                )
         self._auto_fit_columns(ws)
 
     def _build_alerts_sheet(self, wb: Workbook, session: Session, store_id: int | None) -> None:
@@ -199,13 +245,15 @@ class ExcelReportGenerator:
         self._style_headers(ws, headers)
 
         for a in alerts:
-            ws.append([
-                a.id,
-                a.alert_type,
-                a.severity,
-                a.triggered_at.strftime("%Y-%m-%d %H:%M:%S"),
-                a.message,
-            ])
+            ws.append(
+                [
+                    a.id,
+                    a.alert_type,
+                    a.severity,
+                    a.triggered_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    a.message,
+                ]
+            )
         self._auto_fit_columns(ws)
 
 
@@ -230,7 +278,9 @@ class PDFReportGenerator:
         abc_svc = ABCAnalysisService(session)
         abc_summary = abc_svc.get_summary(store_id=store_id)
         forecast_svc = StockoutForecastService(session)
-        critical_stockouts = forecast_svc.get_critical_stockouts(store_id=store_id, days_threshold=14.0)
+        critical_stockouts = forecast_svc.get_critical_stockouts(
+            store_id=store_id, days_threshold=14.0
+        )
         dead_svc = DeadStockService(session)
         dead_summary = dead_svc.get_summary(store_id=store_id)
 
@@ -255,7 +305,12 @@ class PDFReportGenerator:
         pdf.set_font("Helvetica", "", 10)
         pdf.set_text_color(203, 213, 225)
         pdf.set_xy(12, 20)
-        pdf.cell(0, 6, f"Scope: {store_name} | Generated: {datetime.now(UTC).strftime('%Y-%m-%d %H:%M UTC')}", ln=True)
+        pdf.cell(
+            0,
+            6,
+            f"Scope: {store_name} | Generated: {datetime.now(UTC).strftime('%Y-%m-%d %H:%M UTC')}",
+            ln=True,
+        )
 
         pdf.set_y(42)
         pdf.set_text_color(15, 23, 42)
