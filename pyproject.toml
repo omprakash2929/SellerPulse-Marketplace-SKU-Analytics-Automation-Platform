@@ -1,0 +1,90 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sellerpulse"
+version = "0.1.0"
+description = "Marketplace SKU Analytics & Automation Platform for E-commerce Operations"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "SellerPulse Team" }]
+keywords = ["ecommerce", "marketplace", "sku", "analytics", "automation", "shopify", "amazon", "repricing"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Office/Business :: Financial :: Point-Of-Sale",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "sqlalchemy>=2.0.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "streamlit>=1.28.0",
+    "plotly>=5.18.0",
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "typer>=0.9.0",
+    "apscheduler>=3.10.0",
+    "openpyxl>=3.1.0",
+    "fpdf2>=2.7.0",
+    "prometheus-client>=0.19.0",
+    "requests>=2.31.0",
+    "httpx>=0.25.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.1.6",
+]
+
+[project.scripts]
+sellerpulse = "sellerpulse.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "W"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["sellerpulse"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.coverage.run]
+source = ["src/sellerpulse"]
+omit = [
+    "*/dashboard/*",
+    "*/cli.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "pass",
+    "if TYPE_CHECKING:",
+]
