@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # 1. FastAPI Analytics & Automation REST Engine
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: sellerpulse_api
+    restart: unless-stopped
+    command: ["serve", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=sqlite:////app/data/sellerpulse.db
+      - API_KEY=${API_KEY:-sk_live_sellerpulse_demo_key_99}
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - REPORTS_DIR=/app/reports_out
+      - LOG_LEVEL=INFO
+    volumes:
+      - sellerpulse_data:/app/data
+      - sellerpulse_reports:/app/reports_out
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # 2. Executive Streamlit Interactive Analytics Dashboard
+  dashboard:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: sellerpulse_dashboard
+    restart: unless-stopped
+    entrypoint: ["python", "-m", "streamlit", "run", "src/sellerpulse/dashboard/app.py"]
+    command: ["--server.port", "8501", "--server.address", "0.0.0.0"]
+    ports:
+      - "8501:8501"
+    environment:
+      - DATABASE_URL=sqlite:////app/data/sellerpulse.db
+      - REPORTS_DIR=/app/reports_out
+    volumes:
+      - sellerpulse_data:/app/data
+      - sellerpulse_reports:/app/reports_out
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # 3. Autonomous Background Task Scheduler (Alerts, Sync, Reports)
+  scheduler:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: sellerpulse_scheduler
+    restart: unless-stopped
+    command: ["scheduler"]
+    environment:
+      - DATABASE_URL=sqlite:////app/data/sellerpulse.db
+      - REPORTS_DIR=/app/reports_out
+      - ALERTS_CHECK_INTERVAL_HOURS=1
+      - ETL_SYNC_INTERVAL_HOURS=24
+    volumes:
+      - sellerpulse_data:/app/data
+      - sellerpulse_reports:/app/reports_out
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  sellerpulse_data:
+    driver: local
+  sellerpulse_reports:
+    driver: local
